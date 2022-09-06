@@ -745,6 +745,82 @@ _infos_by_gtype_search(GType gtype)
     return NULL;
 }
 
+typedef struct {
+    GType                    gtype;
+    const NMMetaSettingInfo *setting_info;
+} LookupData;
+
+static int
+_lookup_data_cmp(gconstpointer ptr_a, gconstpointer ptr_b, gpointer user_data)
+{
+    const LookupData *a = ptr_a;
+    const LookupData *b = ptr_b;
+
+    nm_assert(a);
+    nm_assert(b);
+    nm_assert(a != b);
+
+    NM_CMP_FIELD(a, b, gtype);
+    return nm_assert_unreachable_val(0);
+}
+
+static const NMMetaSettingInfo *
+_infos_by_gtype_binary_search(GType gtype)
+{
+    static LookupData        static_array[_NM_META_SETTING_TYPE_NUM];
+    static const LookupData *static_ptr = NULL;
+    const LookupData        *ptr;
+    int                      imin;
+    int                      imax;
+
+again:
+    ptr = g_atomic_pointer_get(&static_ptr);
+    if (G_UNLIKELY(!ptr)) {
+        static gsize g_lock = 0;
+        int          i;
+
+        if (!g_once_init_enter(&g_lock))
+            goto again;
+
+        for (i = 0; i < _NM_META_SETTING_TYPE_NUM; i++) {
+            const NMMetaSettingInfo *m = &nm_meta_setting_infos[i];
+
+            static_array[i] = (LookupData){
+                .gtype        = m->get_setting_gtype(),
+                .setting_info = m,
+            };
+        }
+
+        g_qsort_with_data(static_array,
+                          _NM_META_SETTING_TYPE_NUM,
+                          sizeof(static_array[0]),
+                          _lookup_data_cmp,
+                          NULL);
+
+        ptr = static_array;
+        g_atomic_pointer_set(&static_ptr, ptr);
+
+        g_once_init_leave(&g_lock, 1);
+    }
+
+    imin = 0;
+    imax = _NM_META_SETTING_TYPE_NUM - 1;
+
+    while (G_LIKELY(imin <= imax)) {
+        const int imid = (imin + imax) / 2;
+
+        if (G_UNLIKELY(ptr[imid].gtype == gtype))
+            return ptr[imid].setting_info;
+
+        if (ptr[imid].gtype < gtype)
+            imin = imid + 1;
+        else
+            imax = imid - 1;
+    }
+
+    return NULL;
+}
+
 const NMMetaSettingInfo *
 nm_meta_setting_infos_by_gtype(GType gtype)
 {
@@ -752,12 +828,14 @@ nm_meta_setting_infos_by_gtype(GType gtype)
 
 #if _NM_META_SETTING_BASE_IMPL_LIBNM
     setting_info = _infos_by_gtype_from_class(gtype);
-
-    if (NM_MORE_ASSERTS > 20)
-        nm_assert(setting_info == _infos_by_gtype_search(gtype));
 #else
-    setting_info = _infos_by_gtype_search(gtype);
+    setting_info = _infos_by_gtype_binary_search(gtype);
 #endif
+
+    if (NM_MORE_ASSERTS > 20) {
+        nm_assert(setting_info == _infos_by_gtype_search(gtype));
+        nm_assert(setting_info == _infos_by_gtype_binary_search(gtype));
+    }
 
     return setting_info;
 }

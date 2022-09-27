@@ -3,6 +3,8 @@
  * Copyright (C) 2017 - 2018 Red Hat, Inc.
  */
 
+#define NM_WANT_NM_ARRAY_FIND_BSEARCH_INLINE
+
 #include "libnm-glib-aux/nm-default-glib-i18n-lib.h"
 
 #include "nm-meta-setting-base.h"
@@ -750,7 +752,7 @@ typedef struct {
     const NMMetaSettingInfo *setting_info;
 } LookupData;
 
-static int
+_nm_always_inline static inline int
 _lookup_data_cmp(gconstpointer ptr_a, gconstpointer ptr_b, gpointer user_data)
 {
     const LookupData *a = ptr_a;
@@ -761,7 +763,7 @@ _lookup_data_cmp(gconstpointer ptr_a, gconstpointer ptr_b, gpointer user_data)
     nm_assert(a != b);
 
     NM_CMP_FIELD(a, b, gtype);
-    return nm_assert_unreachable_val(0);
+    return 0;
 }
 
 static const NMMetaSettingInfo *
@@ -770,8 +772,7 @@ _infos_by_gtype_binary_search(GType gtype)
     static LookupData        static_array[_NM_META_SETTING_TYPE_NUM];
     static const LookupData *static_ptr = NULL;
     const LookupData        *ptr;
-    int                      imin;
-    int                      imax;
+    gssize                   idx;
 
 again:
     ptr = g_atomic_pointer_get(&static_ptr);
@@ -786,8 +787,8 @@ again:
             const NMMetaSettingInfo *m = &nm_meta_setting_infos[i];
 
             static_array[i] = (LookupData){
-                .setting_info = m,
                 .gtype        = m->get_setting_gtype(),
+                .setting_info = m,
             };
         }
 
@@ -803,22 +804,16 @@ again:
         g_once_init_leave(&g_lock, 1);
     }
 
-    imin = 0;
-    imax = _NM_META_SETTING_TYPE_NUM - 1;
+    idx = nm_array_find_bsearch_inline(ptr,
+                                       _NM_META_SETTING_TYPE_NUM,
+                                       sizeof(ptr[0]),
+                                       &gtype,
+                                       _lookup_data_cmp,
+                                       NULL);
+    if (idx < 0)
+        return NULL;
 
-    while (G_LIKELY(imin <= imax)) {
-        const int imid = (imin + imax) / 2;
-
-        if (G_UNLIKELY(ptr[imid].gtype == gtype))
-            return ptr[imid].setting_info;
-
-        if (ptr[imid].gtype < gtype)
-            imin = imid + 1;
-        else
-            imax = imid - 1;
-    }
-
-    return NULL;
+    return ptr[idx].setting_info;
 }
 
 const NMMetaSettingInfo *

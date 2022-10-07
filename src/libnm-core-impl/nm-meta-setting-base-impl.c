@@ -822,6 +822,11 @@ nm_meta_setting_infos_by_gtype(GType gtype)
     const NMMetaSettingInfo *setting_info;
 
 #if _NM_META_SETTING_BASE_IMPL_LIBNM
+    return _infos_by_gtype_binary_search(gtype);
+#endif
+    nm_assert_not_reached();
+
+#if _NM_META_SETTING_BASE_IMPL_LIBNM
     setting_info = _infos_by_gtype_from_class(gtype);
 #else
     setting_info = _infos_by_gtype_binary_search(gtype);

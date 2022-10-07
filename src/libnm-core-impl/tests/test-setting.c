@@ -5134,6 +5134,29 @@ main(int argc, char **argv)
 {
     nmtst_init(&argc, &argv, TRUE);
 
+    {
+        gs_unref_object NMConnection *con = NULL;
+        guint8                        ctr = 0;
+        guint                         i;
+
+        con = nmtst_create_minimal_connection("test", NULL, NM_SETTING_WIRED_SETTING_NAME, NULL);
+
+        nm_connection_add_setting(con, nm_setting_wired_new());
+
+        nmtst_connection_normalize(con);
+        nmtst_assert_connection_verifies_without_normalization(con);
+
+        for (i = 0; i < 10000000; i++) {
+            ctr += GPOINTER_TO_UINT(nm_connection_get_setting(con, NM_TYPE_SETTING_WIRED));
+            ctr += GPOINTER_TO_UINT(nm_connection_get_setting(con, NM_TYPE_SETTING_CONNECTION));
+            ctr += GPOINTER_TO_UINT(nm_connection_get_setting(con, NM_TYPE_SETTING_PROXY));
+            ctr += GPOINTER_TO_UINT(nm_connection_get_setting(con, NM_TYPE_SETTING_WIREGUARD));
+            ctr += GPOINTER_TO_UINT(nm_connection_get_setting(con, NM_TYPE_SETTING_IP4_CONFIG));
+        }
+
+        return !!ctr;
+    }
+
     g_test_add_func("/libnm/test_connection_uuid", test_connection_uuid);
 
     g_test_add_func("/libnm/settings/test_nm_meta_setting_types_by_priority",

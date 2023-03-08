@@ -203,8 +203,9 @@ Source1: NetworkManager.conf
 Source2: 00-server.conf
 Source4: 20-connectivity-fedora.conf
 Source5: 20-connectivity-redhat.conf
-Source6: 70-nm-connectivity.conf
-Source7: readme-ifcfg-rh.txt
+Source6: 35-wifi-mac-addr.conf
+Source7: 70-nm-connectivity.conf
+Source8: readme-ifcfg-rh.txt
 
 #Patch1: 0001-some.patch
 
@@ -916,11 +917,15 @@ cp %{SOURCE4} %{buildroot}%{nmlibdir}/conf.d/
 %if %{with connectivity_redhat}
 cp %{SOURCE5} %{buildroot}%{nmlibdir}/conf.d/
 mkdir -p %{buildroot}%{_sysctldir}
-cp %{SOURCE6} %{buildroot}%{_sysctldir}
+cp %{SOURCE7} %{buildroot}%{_sysctldir}
+%endif
+
+%if 0%{?fedora} >= 39
+cp %{SOURCE6} %{buildroot}%{nmlibdir}/conf.d/
 %endif
 
 %if 0%{?ifcfg_warning}
-cp %{SOURCE7} %{buildroot}%{_sysconfdir}/sysconfig/network-scripts
+cp %{SOURCE8} %{buildroot}%{_sysconfdir}/sysconfig/network-scripts
 %endif
 
 cp examples/dispatcher/10-ifcfg-rh-routes.sh %{buildroot}%{nmlibdir}/dispatcher.d/
@@ -1067,6 +1072,9 @@ fi
 %dir %{_sysconfdir}/%{name}/dnsmasq-shared.d
 %dir %{_sysconfdir}/%{name}/system-connections
 %config(noreplace) %{_sysconfdir}/%{name}/NetworkManager.conf
+%if 0%{?fedora} >= 39
+%{nmlibdir}/conf.d/35-wifi-mac-addr.conf.conf
+%endif
 %ghost %{_sysconfdir}/%{name}/VPN
 %{_bindir}/nm-online
 %{_libexecdir}/nm-dhcp-helper

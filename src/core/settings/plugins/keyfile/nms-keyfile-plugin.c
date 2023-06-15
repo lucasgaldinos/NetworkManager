@@ -910,6 +910,15 @@ nms_keyfile_plugin_update_connection(NMSKeyfilePlugin   *self,
     previous_filename = nms_keyfile_storage_get_filename(storage);
     uuid              = nms_keyfile_storage_get_uuid(storage);
 
+    if (!force_rename) {
+        /* The caller can force_rename already, but the [keyfile].rename setting
+         * can turn that on unconditionally. */
+        force_rename = nm_config_data_get_value_boolean(NM_CONFIG_GET_DATA,
+                                                        NM_CONFIG_KEYFILE_GROUP_KEYFILE,
+                                                        NM_CONFIG_KEYFILE_KEY_KEYFILE_RENAME,
+                                                        FALSE);
+    }
+
     if (!nms_keyfile_writer_connection(
             connection,
             is_nm_generated,

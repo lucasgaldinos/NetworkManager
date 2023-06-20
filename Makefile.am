@@ -2396,11 +2396,12 @@ src_libnm_systemd_shared_libnm_systemd_shared_la_SOURCES = \
 	src/libnm-systemd-shared/src/basic/inotify-util.h \
 	src/libnm-systemd-shared/src/basic/io-util.c \
 	src/libnm-systemd-shared/src/basic/io-util.h \
+	src/libnm-systemd-shared/src/basic/label.c \
+	src/libnm-systemd-shared/src/basic/label.h \
 	src/libnm-systemd-shared/src/basic/list.h \
 	src/libnm-systemd-shared/src/basic/locale-util.c \
 	src/libnm-systemd-shared/src/basic/locale-util.h \
 	src/libnm-systemd-shared/src/basic/log.h \
-	src/libnm-systemd-shared/src/basic/logarithm.h \
 	src/libnm-systemd-shared/src/basic/macro.h \
 	src/libnm-systemd-shared/src/basic/memory-util.c \
 	src/libnm-systemd-shared/src/basic/memory-util.h \
@@ -2453,6 +2454,7 @@ src_libnm_systemd_shared_libnm_systemd_shared_la_SOURCES = \
 	src/libnm-systemd-shared/src/basic/user-util.h \
 	src/libnm-systemd-shared/src/basic/utf8.c \
 	src/libnm-systemd-shared/src/basic/utf8.h \
+	src/libnm-systemd-shared/src/fundamental/logarithm.h \
 	src/libnm-systemd-shared/src/fundamental/macro-fundamental.h \
 	src/libnm-systemd-shared/src/fundamental/memory-util-fundamental.h \
 	src/libnm-systemd-shared/src/fundamental/sha256.c \

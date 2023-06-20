@@ -28,9 +28,11 @@
 
 /*****************************************************************************/
 
-#ifndef VALGRIND
-#define VALGRIND 0
-#endif
+#define HAVE_GENERIC_MALLINFO 0
+
+#define HAVE_THREADS_H 0
+
+#define HAVE_VALGRIND_VALGRIND_H 0
 
 #define ENABLE_DEBUG_HASHMAP 0
 

@@ -267,6 +267,7 @@ typedef enum {
     NM_SETTINGS_ERROR_UUID_EXISTS,          /*< nick=UuidExists >*/
     NM_SETTINGS_ERROR_INVALID_HOSTNAME,     /*< nick=InvalidHostname >*/
     NM_SETTINGS_ERROR_INVALID_ARGUMENTS,    /*< nick=InvalidArguments >*/
+    NM_SETTINGS_ERROR_VERSION_ID_MISMATCH,  /*< nick=VersionIdMismatch >*/
 } NMSettingsError;
 
 GQuark nm_settings_error_quark(void);
